@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0a0e1a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="LunaGuide" />
+  <meta name="description" content="CraftLuna AI Asistan — LunaGuide" />
+  <title>🌕 LunaGuide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0e1a;
+      --bg2: #0f1626;
+      --bg3: #151d32;
+      --gold: #f5c842;
+      --gold2: #e6a800;
+      --gold-dim: rgba(245,200,66,0.12);
+      --blue: #1a2744;
+      --blue2: #243460;
+      --text: #e8eaf0;
+      --text2: #9ba3b8;
+      --user-bubble: #1e3a6e;
+      --ai-bubble: #151d32;
+      --border: rgba(245,200,66,0.18);
+      --radius: 18px;
+      --shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: fixed;
+      width: 100%;
+    }
+
+    /* Stars background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 80% 10%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 50% 70%, rgba(255,255,255,0.2) 0%, transparent 100%),
+        radial-gradient(1px 1px at 10% 80%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 90% 50%, rgba(255,255,255,0.2) 0%, transparent 100%),
+        radial-gradient(1px 1px at 35% 15%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 65% 85%, rgba(255,255,255,0.2) 0%, transparent 100%),
+        radial-gradient(2px 2px at 75% 25%, rgba(245,200,66,0.15) 0%, transparent 100%),
+        radial-gradient(2px 2px at 25% 60%, rgba(245,200,66,0.1) 0%, transparent 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* HEADER */
+    .header {
+      background: linear-gradient(180deg, rgba(10,14,26,0.98) 0%, rgba(15,22,38,0.95) 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 10;
+      backdrop-filter: blur(10px);
+      flex-shrink: 0;
+    }
+
+    .header-moon {
+      font-size: 28px;
+      filter: drop-shadow(0 0 8px rgba(245,200,66,0.6));
+      animation: moonPulse 3s ease-in-out infinite;
+    }
+
+    @keyframes moonPulse {
+      0%, 100% { filter: drop-shadow(0 0 8px rgba(245,200,66,0.6)); }
+      50% { filter: drop-shadow(0 0 16px rgba(245,200,66,0.9)); }
+    }
+
+    .header-info { flex: 1; }
+
+    .header-title {
+      font-family: 'Cinzel', serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 1px;
+      text-shadow: 0 0 20px rgba(245,200,66,0.4);
+    }
+
+    .header-sub {
+      font-size: 11px;
+      color: var(--text2);
+      margin-top: 1px;
+    }
+
+    .header-status {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: #4ade80;
+    }
+
+    .status-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #4ade80;
+      box-shadow: 0 0 6px #4ade80;
+      animation: blink 2s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* CHAT AREA */
+    .chat-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 1;
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
+    }
+
+    .chat-area::-webkit-scrollbar { display: none; }
+
+    /* WELCOME */
+    .welcome {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 20px 10px;
+      gap: 12px;
+      animation: fadeIn 0.6s ease;
+    }
+
+    .welcome-moon {
+      font-size: 56px;
+      filter: drop-shadow(0 0 20px rgba(245,200,66,0.7));
+      animation: float 4s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .welcome h2 {
+      font-family: 'Cinzel', serif;
+      font-size: 22px;
+      color: var(--gold);
+      text-shadow: 0 0 20px rgba(245,200,66,0.4);
+    }
+
+    .welcome p {
+      font-size: 13px;
+      color: var(--text2);
+      line-height: 1.6;
+      max-width: 280px;
+    }
+
+    /* QUICK QUESTIONS */
+    .quick-btns {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+      max-width: 340px;
+    }
+
+    .quick-btn {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-size: 13px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .quick-btn:active, .quick-btn:hover {
+      background: var(--gold-dim);
+      border-color: var(--gold);
+      transform: scale(0.98);
+    }
+
+    .quick-btn span { font-size: 16px; }
+
+    /* MESSAGES */
+    .message {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      animation: slideUp 0.3s ease;
+      max-width: 100%;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.user { align-items: flex-end; }
+    .message.ai { align-items: flex-start; }
+
+    .bubble {
+      padding: 10px 14px;
+      border-radius: var(--radius);
+      font-size: 14px;
+      line-height: 1.6;
+      max-width: 85%;
+      word-break: break-word;
+    }
+
+    .message.user .bubble {
+      background: linear-gradient(135deg, #1e3a6e, #2a4f96);
+      border: 1px solid rgba(100,140,255,0.3);
+      border-bottom-right-radius: 4px;
+      color: #e8eeff;
+    }
+
+    .message.ai .bubble {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 4px;
+      color: var(--text);
+    }
+
+    .ai-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
+      font-size: 11px;
+      color: var(--gold);
+      font-weight: 600;
+    }
+
+    .bubble img {
+      max-width: 100%;
+      border-radius: 10px;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .file-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(245,200,66,0.12);
+      border: 1px solid rgba(245,200,66,0.25);
+      border-radius: 8px;
+      padding: 4px 9px;
+      font-size: 12px;
+      color: var(--gold);
+      margin-bottom: 6px;
+    }
+
+    /* TYPING INDICATOR */
+    .typing {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 10px 14px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      border-bottom-left-radius: 4px;
+      width: fit-content;
+    }
+
+    .typing span {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--gold);
+      animation: typingDot 1.2s ease-in-out infinite;
+    }
+
+    .typing span:nth-child(2) { animation-delay: 0.2s; }
+    .typing span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typingDot {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+      30% { transform: translateY(-5px); opacity: 1; }
+    }
+
+    /* PREVIEW ATTACHMENTS */
+    .attachments-preview {
+      display: flex;
+      gap: 8px;
+      padding: 8px 12px 0;
+      flex-wrap: wrap;
+      z-index: 1;
+    }
+
+    .attach-item {
+      position: relative;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 6px 10px;
+      font-size: 12px;
+      color: var(--gold);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      max-width: 160px;
+    }
+
+    .attach-item img {
+      width: 36px; height: 36px;
+      object-fit: cover;
+      border-radius: 6px;
+    }
+
+    .attach-remove {
+      background: rgba(255,60,60,0.2);
+      border: none;
+      color: #ff6060;
+      border-radius: 50%;
+      width: 18px; height: 18px;
+      font-size: 11px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* INPUT AREA */
+    .input-area {
+      background: linear-gradient(0deg, rgba(10,14,26,0.99) 0%, rgba(15,22,38,0.97) 100%);
+      border-top: 1px solid var(--border);
+      padding: 10px 12px;
+      padding-bottom: max(10px, env(safe-area-inset-bottom));
+      z-index: 10;
+      flex-shrink: 0;
+    }
+
+    .input-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      background: var(--bg3);
+      border: 1.5px solid var(--border);
+      border-radius: 22px;
+      padding: 8px 10px 8px 14px;
+      transition: border-color 0.2s;
+    }
+
+    .input-row:focus-within {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(245,200,66,0.1);
+    }
+
+    textarea {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      resize: none;
+      max-height: 120px;
+      min-height: 24px;
+      line-height: 1.5;
+      padding: 0;
+    }
+
+    textarea::placeholder { color: var(--text2); }
+
+    .input-actions {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .icon-btn {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      color: var(--text2);
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .icon-btn:active { transform: scale(0.88); }
+    .icon-btn:hover { color: var(--gold); background: var(--gold-dim); }
+
+    .icon-btn.recording {
+      color: #ff4444;
+      background: rgba(255,68,68,0.15);
+      animation: recordPulse 1s ease-in-out infinite;
+    }
+
+    @keyframes recordPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(255,68,68,0.4); }
+      50% { box-shadow: 0 0 0 8px rgba(255,68,68,0); }
+    }
+
+    .send-btn {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      border: none;
+      background: linear-gradient(135deg, var(--gold), var(--gold2));
+      color: #0a0e1a;
+      font-size: 17px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      flex-shrink: 0;
+      box-shadow: 0 2px 12px rgba(245,200,66,0.4);
+    }
+
+    .send-btn:active { transform: scale(0.9); }
+    .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    #imgInput, #fileInput { display: none; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @media (min-width: 480px) {
+      body { max-width: 480px; margin: 0 auto; }
+      .chat-area::-webkit-scrollbar { display: block; width: 4px; }
+      .chat-area::-webkit-scrollbar-track { background: transparent; }
+      .chat-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-moon">🌕</div>
+  <div class="header-info">
+    <div class="header-title">LunaGuide</div>
+    <div class="header-sub">CraftLuna AI Asistan</div>
+  </div>
+  <div class="header-status">
+    <div class="status-dot"></div>
+    <span>Aktif</span>
+  </div>
+</div>
+
+<div class="chat-area" id="chatArea">
+  <div class="welcome" id="welcome">
+    <div class="welcome-moon">🌕</div>
+    <h2>LunaGuide</h2>
+    <p>CraftLuna hakkında her şeyi sorabilirsin. Kurallar, komutlar, kuşatma savaşı ve daha fazlası!</p>
+    <div class="quick-btns">
+      <button class="quick-btn" onclick="quickAsk('Sunucuya nasıl katılabilirim?')">
+        <span>🎮</span> Sunucuya nasıl katılabilirim?
+      </button>
+      <button class="quick-btn" onclick="quickAsk('Ceza sistemi nasıl işliyor?')">
+        <span>⚖️</span> Ceza sistemi nasıl işliyor?
+      </button>
+      <button class="quick-btn" onclick="quickAsk('Kuşatma savaşı nasıl başlatılır?')">
+        <span>⚔️</span> Kuşatma savaşı nasıl başlatılır?
+      </button>
+      <button class="quick-btn" onclick="quickAsk('Mağazada şu an hangi indirimler var?')">
+        <span>🛒</span> Mağazada indirim var mı?
+      </button>
+      <button class="quick-btn" onclick="quickAsk('TPA tuzağı kuralları nelerdir?')">
+        <span>🪤</span> TPA tuzağı kuralları nelerdir?
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="attachments-preview" id="attachPreview"></div>
+
+<div class="input-area">
+  <div class="input-row">
+    <textarea id="msgInput" placeholder="CraftLuna hakkında sor..." rows="1"
+      oninput="autoResize(this)" onkeydown="handleKey(event)"></textarea>
+    <div class="input-actions">
+      <button class="icon-btn" onclick="document.getElementById('imgInput').click()" title="Fotoğraf ekle">📷</button>
+      <button class="icon-btn" onclick="document.getElementById('fileInput').click()" title="Dosya ekle">📎</button>
+      <button class="icon-btn" id="micBtn" onclick="toggleMic()" title="Sesli soru">🎙️</button>
+      <button class="send-btn" id="sendBtn" onclick="sendMessage()" title="Gönder">➤</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="imgInput" accept="image/*" onchange="handleImage(event)" />
+<input type="file" id="fileInput" accept=".pdf,.txt" onchange="handleFile(event)" />
+
+<script>
+const SYSTEM_PROMPT = `Sen CraftLuna Minecraft sunucusunun resmi AI asistanı LunaGuide'sın. YALNIZCA CraftLuna ile ilgili sorulara cevap verirsin. CraftLuna dışı konularda kibarca "Bu konuda yardımcı olamam, sadece CraftLuna hakkında sorular sorabilirsin 🌕" de.
+
+Cevaplarını doğal, akıcı Türkçe metin olarak ver. Kısa ve net ol.
+
+=== CraftLuna TAM BİLGİ DOSYASI ===
+
+GENEL BİLGİLER:
+- İşletici: Lunaxia Network LLC
+- Kuruluş: 2024
+- Tür: Türk Minecraft Network (Yarı-Vanilya Towny)
+- Slogan: Türkiye'nin En Gelişmiş Sunucu Ağı
+- Uptime: %99,9 | Discord: 13.500+ üye | E-posta: support@craftluna.net
+- Toplam kayıtlı oyuncu: 248.110+
+
+BAĞLANTI:
+- Java (PC): mc.CraftLuna.net / oyna.craftluna.net — Sürüm: 1.16.5–1.21.3, Önerilen: 1.21.3
+- Bedrock (Mobil/Konsol): mc.CraftLuna.net, Port: 19132 — Sürüm: 1.21.40/1.21.44/1.21.50/1.21.51
+- Kayıt: /register <şifre>
+- 3. parti mod/yazılım desteği yok
+
+OYUN MODLARI:
+1. Towny — kasaba kurma, ekonomi, kuşatma savaşı
+2. LunaSMP — hayatta kalma SMP, 100.000 blok harita
+3. TrapPvP — tuzak ve PvP
+4. SkyBlock — gökyüzü adası
+5. BoxMining — kutu madenciliği
+6. Daireden Son Çıkan — özgün mini oyun
+
+RESMİ LİNKLER:
+- Ana site: craftluna.net | Wiki: docs.craftluna.net | Mağaza: craftluna.net/store
+- Ceza sorgulama: punishment.craftluna.net | Destek: craftluna.net/support/tickets
+- Sıralamalar: craftluna.net/leaderboards | Discord: discord.gg/craftluna
+- Instagram: @craftlunamc (12K) | TikTok: @craftlunamc (2.8K / 47.8K beğeni) | YouTube: @craftlunamc
+
+SEZON GEÇMİŞİ:
+- 1. Sezon: 2024 (ilk sezon)
+- 2. Sezon: 27 Eylül 2024
+- 3. Sezon: 17 Ocak 2025 (video etkinliği + at sistemi eklendi)
+- 4. Sezon: 13 Haziran 2025
+- 5. Sezon: 17 Ekim 2025 (1:326 harita + tüm yeni özellikler) — Towny 14 Ekim'de kapandı, 17 Ekim saat 20:00'de açıldı
+- LunaSMP 2. Sezon: 12 Aralık 2025 (9 Aralık kapandı, 12 Aralık saat 20:00 açıldı)
+
+TOWNY 5. SEZON YENİLİKLERİ:
+- 1:326 ölçekli özel dünya haritası (CraftLuna ekibine özel tasarım)
+- Spawnerlar artık madenlerde doğal olarak bulunuyor (elmas gibi)
+- Sipariş sistemi: oyuncular arası ücretli sipariş/üretim
+- Duello: kendi eşyalarınla biyom veya arenada savaş
+- Meslekler: her mesleğe özel ödül ve seviye bazlı kazanç
+- Ticaret merkezi: üye yönetimi, köylü mantığı
+- At sistemi: oyuncular kendi atına sahip, istediği zaman çağırabilir
+- Velmor sistemi: NPC ile haftalık güncellenen ticaret
+- Yenilenen battlepass
+- Kuşatma dengesi: maliyetler azaldı, kazanç arttı
+- İşgal VEYA yağma seçimi zorunlu (ikisi aynı anda yapılamaz)
+- Sezon ödülü: ilk 3 oyuncuya kredi ödülü
+- Sezon sıfırlandığında: eşyalar ve kasabalar sıfırlandı, site sandığı ve /ürünlerim korundu
+
+LunaSMP 2. SEZON:
+- 100.000 bloktan geniş harita
+- Tamamen yenilenmiş altyapı (CraftLuna teknolojisi)
+- Medya başvuruları 11 Aralık'a kadar açıktı
+- Para sıralaması ödülleri: 1.=500 Kredi, 2.=300 Kredi, 3.=150 Kredi
+- Teaser: https://youtu.be/msbhyCRjilI
+
+TOWNY PARA SIRALAMASI (Top 10):
+1. lazdoven445944 — 18.2M (16 gün 8 saat) — Ölüm: 1682, Öldürme: 437
+2. lolo — 11.9M (28 gün 1 saat) — Ölüm: 27, Öldürme: 0
+3. GameSenan — 9.1M (15 gün 6 saat) — Ölüm: 55, Öldürme: 29
+4. dre4m38 — 8.3M (10 gün 14 saat)
+5. EmperorPaws1 — 4.7M (19 gün 22 saat)
+6. ReXoN_MC — 3.4M (1 gün 20 saat)
+7. ustakayra19 — 2.1M (24 gün 22 saat)
+8. Auraxx11 — 1.8M (2 saat)
+9. babapiromessi — 1.7M (5 gün 11 saat)
+10. CrepuscularVies — 1.1M (2 gün 11 saat)
+
+MAĞAZA & KREDİ:
+- Mağaza kategorileri: Towny, TrapPvP, SMP, SkyBlock, BoxMining
+- Örnek ürünler: 1x Ender Kasa=25kr | Lunaris üyelik=1.000kr (normal 2.750kr, -64% indirim) | Spawner Kazması 15 kullanım=360kr (-25% indirim)
+- Bu ay destekçi sıralaması: 1.TOMA4540, 2.L1monB, 3.Jockey
+- Krediler devredilemez, nakde çevrilemez, yalnızca kendi hesabında geçerli
+- Sandık ürünü 30 gün içinde aktive edilmeli; aksi halde silinir, iade yok
+- Aktif edilen üründe kesinlikle iade yok (6502 sayılı Kanun)
+- Zaman zaman 2X Kredi Bonus etkinlikleri düzenlenir (şu an AKTİF: "Sınırlı süreliğine 2X Kredi Bonus etkinliği başladı!")
+- Haksız chargeback açılırsa hesap kalıcı kapatılabilir
+- İçerik üreticisi (TikTok/IG/YT) 50 Kredi kazanır (craftluna.net/support/tickets'ten başvuru)
+
+ÜRÜN ETKİNLEŞTİRME:
+- craftluna.net/chest → "Teslim Al" (sunucuda olman şart)
+- Hediye: "Hediye Gönder" seçeneği
+- Oyun içi: /ürünlerim
+- Oyundaki ad ≠ sitedeki ad → ürün teslim edilmez
+- Sunucu kapalıyken aktivasyon yapılamaz
+
+SANDIK İLE SATIŞ:
+1. /plot set shop → arsayı market yap
+2. Sandık yerleştir
+3. Satmak istediğin eşyayı eline al → sandığa SOL TIKLA
+4. Satış fiyatını gir → eşyaları sandığa koy
+5. Yönetmek için SAĞ TIKLA | /qs help
+
+GENEL KURALLAR:
+- Kişisel sorumluluk: eşya/para kaybından CraftLuna sorumlu değil, hesap güvenliği oyuncuya ait
+- Kasabana aldığın oyuncuların ihlallerinden sen de sorumlusun
+- Multi-account → tüm hesaplar kalıcı ban
+- Hile/makro/3. parti yazılım → süresiz ban
+- Bug kullanmak → süresiz ban
+- Uygunsuz skin → uyarısız uzaklaştırma
+- Gerçek parayla oyun içi ticaret → süresiz uzaklaştırma
+- Sunucu ekonomisini manipüle etmek → ceza
+- Din/dil/ırk/cinsiyet ayrımcılığı → ağır ceza
+- YouTube/MC sunucu reklamı → süresiz susturma/ban
+- Yetkili taklidi → süresiz ban
+- Yetkililer asla hesap bilgisi veya eşya istemez
+
+CEZA SİSTEMİ:
+- 1. ihlal → 3 gün ban
+- 2. ihlal → 14 gün ban
+- 3. ihlal → 30 gün ban
+- Hile/dolandırıcılık → direkt süresiz ban
+- Dolandırıcılık → min 7 gün, tekrarda kalıcı ban
+- Ceza profili: punishment.craftluna.net
+- Şikayet: 24 saat içinde, kanıtsız kabul edilmez
+- İtiraz hakkı: 1 kez (asılsız/tekrarlı → hak kaybedilir)
+- Yetkililer ceza sürelerini değiştirme yetkisine sahip
+
+KANİT GEREKSİNİMLERİ:
+- Hile → tam ekran video (tarih/saat görünür)
+- Claim tacizi → tam ekran video (30sn öncesi dahil, tarih/saat)
+- Dolandırıcılık → tam ekran video (chat+sandık/envanter görünür, 30sn öncesi)
+- Küfür/hakaret → SS veya video
+- TPA tuzağı → SADECE video (SS geçersiz; ihlalcinin kasaba adı ve başkanı görünmeli)
+- Düzenlenmiş/kesilmiş video kesinlikle reddedilir
+
+CLAIM TACİZİ:
+- Kasabalar arası min mesafe: 80 blok (5 chunk)
+- Claim sınırına yapı mesafesi: min 6 blok
+- Bloklar kaldırılmadan önce F11 ile tarihli SS alınmalı, 3 gün saklanmalı
+- Yasak: özel mesajla tehdit, claim dışı tekrarlı öldürme, lav/su/blok trolleme, devasa engel yapı
+
+TPA TUZAĞI & TRAP KURALLARI:
+- TPA ile çağırıp tuzağa düşürüp öldürmek → KESİNLİKLE YASAK
+- Oyuncu kendi isteğiyle ışınlandı ve kasıtsız öldü → ihlal değil
+- Oyuncuyu bir alana kapatmak/hareket kısıtlamak → ihlal
+- Bilinçli tuzak hazırlayıp kaçış şansını ortadan kaldırmak → ihlal
+- Trap alanı SADECE trap plotu olarak işaretlenmiş arsalarda serbest
+- Kasabada trap plotu dışında tuzak → tuzak yapan VE kasaba sahibi cezalandırılır
+- Ceza sonrası tuzak kaldırılmazsa → kasaba sahibi 2 KAT ceza
+- Tuzaktan ölen oyuncunun eşyası iade edilmez
+
+DOLANDIRICILIK:
+- Hileyle eşya almak veya kandırarak eşya almak yasak
+- Min ceza: 7 gün ban, tekrarda kalıcı ban
+- SS dolandırıcılık davalarında geçersiz, sadece video
+
+KUŞATMA SAVAŞI:
+- Sadece uluslar arası savaş yapılabilir (kasabalar doğrudan savaşamaz)
+- /nation enemy add [ulus] komutuyla düşman ilan edilmeli
+- Hedef kasaba peaceful modda olmamalı
+- /t toggle peaceful off → 3 gün bekleme süresi
+- Savaş süresi: 24 saat, 7 aşama (60dk) + 10dk dinlenme
+- Katılım şartı: Çavuş rütbesi (/nation rank add [isim] Sergeant)
+- İşgal VEYA yağma (ikisi birden yapılamaz)
+- Bayrak erişimini kapatmak YASAK
+- Savaş sırasında bayrak chunk'una claim eklemek YASAK
+- Savaş bitti → galip taraf inşa ettiği tüm yapıları yıkmak zorunda
+- Trap plot ile bayrak arası min 5 chunk
+- Teslim olma: beyaz flama çek → fethedildi sayılır
+- İsyan Kuşatması: fethedilen kasaba özgürlüğü için savaşır
+- Kurtuluş Kuşatması: dost ulus yardım eder
+- Tarafsız mod: /t toggle neutral on → savaşa karışmaz
+
+KUŞATMA KOMUTLARI:
+/sw hud [kasaba] | /n enemy add [ulus] | /n ally add [ulus] | /t toggle peaceful off
+/sw nation paysoldiers [miktar] | /sw collect | /nation siegewar occupiedforeigntowns
+
+TOWNY İZİN YÖNETİMİ:
+- Gruplar: Resident, Nation, Ally, Outsider
+- /t set perm {on/off} | /t set perm build/destroy/switch/itemuse {on/off}
+- /t set perm build outsider off → yabancıların blok koymasını engeller
+
+KASABA KOMUTLARI (Önemli olanlar):
+/town new {isim} | /town add {oyuncu} | /town kick {oyuncu} | /town invite {oyuncu}
+/town claim | /town unclaim | /town spawn | /town deposit/withdraw {miktar}
+/town toggle pvp/peaceful/neutral/open/public on/off
+/town set mayor/name/spawn/taxes/board
+
+KRALLIK KOMUTLARI:
+/nation new {isim} | /nation add/kick {şehir} | /nation set king/capital/taxes
+/nation rank add/remove {oyuncu} {rütbe} | /nation enemy/ally add [isim]
+
+ARSA KOMUTLARI:
+/plot claim | /plot fs/forsale | /plot nfs | /plot evict | /plot trust add/remove
+/plot set jail/arena/bank/embassy/farm/inn/name
+/plot toggle pvp/mobs/explosion/fire on/off
+
+HİZMET POLİTİKASI:
+- CraftLuna IP bazlı yasaklama uygulayabilir
+- Dijital ürünler yalnızca belirtilen sezon/süre boyunca geçerli
+- Teslim/aktivasyon sonrası iade hakkı yok (TC 6502)
+- Sunucuya giriş = tüm kuralları kabul etmek
+- İşletici: Lunaxia Network LLC | Mojang Studios AB ile bağlantısı yoktur
+
+GİTHUB: github.com/CraftLuna — 22 repository (SiegeWar, RedisEconomy, SpawnerMeta, AxKills vb.)
+
+BLOG YAYINLARI:
+- 23 Haz 2024: CraftLuna Açılıyor! (1. Sezon)
+- 26 Tem 2024: Hesap Güvenliği Hakkında
+- 27 Eyl 2024: 2. Sezon duyurusu
+- 17 Oca 2025: 3. Sezon duyurusu
+- 13 Haz 2025: 4. Sezon duyurusu
+- 17 Eki 2025: 5. Sezon duyurusu (Amownyy tarafından, 3595 görüntülenme)
+- 12 Ara 2025: LunaSMP 2. Sezon duyurusu (2904 görüntülenme)
+
+TİKTOK (@craftlunamc):
+- 2.802 takipçi, 47.800+ beğeni
+- İçerik: sunucu tanıtım, IP duyuruları, oyun içi komik anlar, bayram temalı içerikler
+- Hashtagler: #minecraft #minecrafttürkiye #minecrafttr #craftluna #keşfet
+
+INSTAGRAM (@craftlunamc): 12.000 takipçi, 218 gönderi
+DISCORD: 13.517 üye — "CRAFTLUNA - Towny & SMP & TrapPvP & BoxMining"
+
+YÖNETİM: Amownyy ve miyawww aktif yetkili.
+`;
+
+let messages = [];
+let pendingImage = null;
+let pendingFile = null;
+let isRecording = false;
+let recognition = null;
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function quickAsk(q) {
+  document.getElementById('msgInput').value = q;
+  autoResize(document.getElementById('msgInput'));
+  sendMessage();
+}
+
+function handleImage(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    pendingImage = { base64: ev.target.result.split(',')[1], type: file.type, name: file.name };
+    renderAttachPreview();
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+function handleFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  if (file.type === 'application/pdf') {
+    reader.onload = ev => {
+      pendingFile = { base64: ev.target.result.split(',')[1], type: 'application/pdf', name: file.name };
+      renderAttachPreview();
+    };
+    reader.readAsDataURL(file);
+  } else {
+    reader.onload = ev => {
+      pendingFile = { text: ev.target.result, name: file.name };
+      renderAttachPreview();
+    };
+    reader.readAsText(file);
+  }
+  e.target.value = '';
+}
+
+function renderAttachPreview() {
+  const el = document.getElementById('attachPreview');
+  el.innerHTML = '';
+  if (pendingImage) {
+    el.innerHTML += `<div class="attach-item">
+      <img src="data:${pendingImage.type};base64,${pendingImage.base64}" />
+      <span style="font-size:11px;color:var(--text2);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${pendingImage.name}</span>
+      <button class="attach-remove" onclick="pendingImage=null;renderAttachPreview()">✕</button>
+    </div>`;
+  }
+  if (pendingFile) {
+    el.innerHTML += `<div class="attach-item">
+      <span>📎</span>
+      <span style="font-size:11px;color:var(--text2);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${pendingFile.name}</span>
+      <button class="attach-remove" onclick="pendingFile=null;renderAttachPreview()">✕</button>
+    </div>`;
+  }
+}
+
+function toggleMic() {
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    alert('Tarayıcınız sesli giriş desteklemiyor. Chrome kullanmayı deneyin.');
+    return;
+  }
+  if (isRecording) {
+    recognition && recognition.stop();
+    isRecording = false;
+    document.getElementById('micBtn').classList.remove('recording');
+    return;
+  }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.lang = 'tr-TR';
+  recognition.interimResults = false;
+  recognition.onstart = () => {
+    isRecording = true;
+    document.getElementById('micBtn').classList.add('recording');
+  };
+  recognition.onresult = e => {
+    const txt = e.results[0][0].transcript;
+    document.getElementById('msgInput').value = txt;
+    autoResize(document.getElementById('msgInput'));
+    isRecording = false;
+    document.getElementById('micBtn').classList.remove('recording');
+    sendMessage();
+  };
+  recognition.onerror = () => {
+    isRecording = false;
+    document.getElementById('micBtn').classList.remove('recording');
+  };
+  recognition.onend = () => {
+    isRecording = false;
+    document.getElementById('micBtn').classList.remove('recording');
+  };
+  recognition.start();
+}
+
+function addMessage(role, text, imgBase64, imgType, fileName) {
+  const area = document.getElementById('chatArea');
+  const welcome = document.getElementById('welcome');
+  if (welcome) welcome.remove();
+
+  const div = document.createElement('div');
+  div.className = `message ${role}`;
+
+  let inner = '';
+  if (role === 'ai') {
+    inner += `<div class="ai-header">🌕 LunaGuide</div>`;
+  }
+
+  let bubbleContent = '';
+  if (imgBase64) {
+    bubbleContent += `<img src="data:${imgType};base64,${imgBase64}" alt="Eklenen görsel" />`;
+  }
+  if (fileName) {
+    bubbleContent += `<div class="file-tag">📎 ${fileName}</div>`;
+  }
+  bubbleContent += text.replace(/\n/g, '<br>');
+
+  inner += `<div class="bubble">${bubbleContent}</div>`;
+  div.innerHTML = inner;
+  area.appendChild(div);
+  area.scrollTop = area.scrollHeight;
+}
+
+function addTyping() {
+  const area = document.getElementById('chatArea');
+  const div = document.createElement('div');
+  div.className = 'message ai';
+  div.id = 'typingMsg';
+  div.innerHTML = `<div class="ai-header">🌕 LunaGuide</div><div class="typing"><span></span><span></span><span></span></div>`;
+  area.appendChild(div);
+  area.scrollTop = area.scrollHeight;
+}
+
+function removeTyping() {
+  const el = document.getElementById('typingMsg');
+  if (el) el.remove();
+}
+
+async function sendMessage() {
+  const input = document.getElementById('msgInput');
+  const text = input.value.trim();
+  if (!text && !pendingImage && !pendingFile) return;
+
+  const sendBtn = document.getElementById('sendBtn');
+  sendBtn.disabled = true;
+
+  const displayText = text || (pendingImage ? '📷 Görsel hakkında soru' : '📎 Dosya hakkında soru');
+  addMessage('user', displayText, pendingImage?.base64, pendingImage?.type, pendingFile?.name);
+  input.value = '';
+  input.style.height = 'auto';
+
+  const userContent = [];
+  if (pendingImage) {
+    userContent.push({ type: 'image', source: { type: 'base64', media_type: pendingImage.type, data: pendingImage.base64 } });
+  }
+  if (pendingFile) {
+    if (pendingFile.base64) {
+      userContent.push({ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: pendingFile.base64 } });
+    } else if (pendingFile.text) {
+      userContent.push({ type: 'text', text: `Eklenen dosya içeriği (${pendingFile.name}):\n${pendingFile.text}` });
+    }
+  }
+  if (text) userContent.push({ type: 'text', text });
+
+  messages.push({ role: 'user', content: userContent.length === 1 && userContent[0].type === 'text' ? text : userContent });
+
+  pendingImage = null;
+  pendingFile = null;
+  renderAttachPreview();
+
+  addTyping();
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: SYSTEM_PROMPT,
+        messages: messages
+      })
+    });
+
+    const data = await res.json();
+    removeTyping();
+
+    const reply = data.content?.[0]?.text || 'Bir hata oluştu, tekrar dene.';
+    messages.push({ role: 'assistant', content: reply });
+    addMessage('ai', reply);
+  } catch (err) {
+    removeTyping();
+    addMessage('ai', 'Bağlantı hatası oluştu. İnternet bağlantını kontrol et ve tekrar dene. 🌕');
+  }
+
+  sendBtn.disabled = false;
+}
+</script>
+</body>
+</html>
