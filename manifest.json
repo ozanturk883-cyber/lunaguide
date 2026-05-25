@@ -1,0 +1,25 @@
+{
+  "name": "LunaGuide — CraftLuna AI Asistan",
+  "short_name": "LunaGuide",
+  "description": "CraftLuna Minecraft sunucusu için AI asistan",
+  "start_url": "/lunaguide/",
+  "scope": "/lunaguide/",
+  "display": "standalone",
+  "background_color": "#0a0e1a",
+  "theme_color": "#0a0e1a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192x192/0a0e1a/f5c842?text=🌕",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://via.placeholder.com/512x512/0a0e1a/f5c842?text=🌕",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
